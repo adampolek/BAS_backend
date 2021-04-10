@@ -2,14 +2,30 @@ package com.example.bas.backend.service;
 
 import com.example.bas.backend.model.AppUser;
 import com.example.bas.backend.repo.AppUserRepo;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, Long> implements AppUserService {
-    public AppUserServiceImpl(AppUserRepo appUserRepo) {
+
+    private final PasswordEncoder passwordEncoder;
+
+    public AppUserServiceImpl(final AppUserRepo appUserRepo, @Lazy final PasswordEncoder passwordEncoder) {
         super(appUserRepo);
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public boolean save(AppUser object) {
+        if(!repo.existsByUsername(object.getUsername())){
+            object.setPassword(passwordEncoder.encode(object.getPassword()));
+            return super.save(object);
+        } else{
+            return false;
+        }
     }
 
     @Override
