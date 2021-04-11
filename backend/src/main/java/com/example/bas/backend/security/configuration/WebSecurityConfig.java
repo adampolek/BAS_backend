@@ -53,7 +53,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // We don't need CSRF for this example
         httpSecurity.csrf().disable().cors().and().headers().frameOptions().disable().and()
                 // dont authenticate this particular request
-                .authorizeRequests().anyRequest().permitAll().and().
+                .authorizeRequests()
+//                .antMatchers(HttpMethod.POST, "/products").hasRole("ADMIN")
+//                .antMatchers(HttpMethod.PUT, "/products/product/**").hasRole("ADMIN")
+//                .antMatchers(HttpMethod.DELETE, "/products/product/**").hasRole("ADMIN")
+                .antMatchers("/bas/user/login",
+                        "/bas/user/register").permitAll()
+                .anyRequest().authenticated().and().
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
                         exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
@@ -70,7 +76,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             public void addCorsMappings(CorsRegistry registry) {
                 registry
                         .addMapping("/*")
-                        .allowedOrigins("*")
                         .allowedOrigins("http://localhost:3000")
                         .allowedHeaders("*").allowedMethods("POST", "GET", "OPTIONS", "PUT")
                         .allowCredentials(true).maxAge(3600);

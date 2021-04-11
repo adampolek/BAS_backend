@@ -1,6 +1,7 @@
 package com.example.bas.backend.controller;
 
 import com.example.bas.backend.model.AppUser;
+import com.example.bas.backend.model.AppUserForm;
 import com.example.bas.backend.security.configuration.JwtTokenUtil;
 import com.example.bas.backend.security.models.JwtRequest;
 import com.example.bas.backend.security.models.JwtResponse;
@@ -49,5 +50,30 @@ public class AppUserController {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         AppUser userDetails = (AppUser) appUserService.loadUserByUsername(user.getUsername());
         return ResponseEntity.ok(new JwtResponse(jwtTokenUtil.generateToken(userDetails)));
+    }
+
+    @GetMapping(value = "/account", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getAccount(Authentication authentication) {
+        AppUser user = (AppUser) authentication.getPrincipal();
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping(value = "/account", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> updateAccount(@Valid @RequestBody final AppUserForm form) {
+        System.out.println(form);
+        AppUser user = appUserService.findById(form.getId());
+        user.setFirstName(form.getFirstName());
+        user.setLastName(form.getLastName());
+        user.setHeight(form.getHeight());
+        user.setGender(form.getGender());
+        user.setBirthDate(form.getBirthDate());
+        user.setEmail(form.getEmail());
+        if(!user.getPassword().equals(form.getPassword())){
+            user.setPassword(form.getPassword());
+            return appUserService.update(user,true) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+        }
+        return appUserService.update(user,false) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
     }
 }

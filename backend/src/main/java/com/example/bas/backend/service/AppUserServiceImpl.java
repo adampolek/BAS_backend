@@ -38,4 +38,12 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
         }
         return user;
     }
+
+    @Override
+    public boolean update(AppUser user, boolean changedPassword) {
+        if(changedPassword){
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        return super.save(user);
+    }
 }

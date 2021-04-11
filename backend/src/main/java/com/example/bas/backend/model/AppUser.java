@@ -31,7 +31,7 @@ public class AppUser implements UserDetails {
     private String email;
     private Date birthDate;
     private Integer height;
-    private Boolean gender;
+    private String gender;
     private Date lastLogin;
     @OneToOne
     private UserRole role;
