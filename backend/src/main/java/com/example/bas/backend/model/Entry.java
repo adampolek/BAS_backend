@@ -18,7 +18,7 @@ public class Entry {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     private AppUser user;
     private Double weight;
     private Integer glucose;

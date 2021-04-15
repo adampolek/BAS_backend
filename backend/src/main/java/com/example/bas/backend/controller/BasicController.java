@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -33,14 +33,14 @@ public class BasicController<CLASS_SERVICE extends BasicService<CLASS, ID>, CLAS
     @PostMapping(value = "/save")
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody
-    ResponseEntity<String> save(@Valid @RequestBody final CLASS form, BindingResult bindingResult) {
+    ResponseEntity<String> save(@Valid @RequestBody final CLASS form, Authentication authentication) {
         return service.save(form) ? ResponseEntity.status(201).body("Successfully add " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
     }
 
     @PutMapping(value = "/update")
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody
-    ResponseEntity<String> update(@Valid @RequestBody final CLASS form, BindingResult bindingResult) {
+    ResponseEntity<String> update(@Valid @RequestBody final CLASS form, Authentication authentication) {
         return service.save(form) ? ResponseEntity.status(201).body("Successfully update " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " updated");
     }
 
