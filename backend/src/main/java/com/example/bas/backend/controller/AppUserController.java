@@ -1,22 +1,17 @@
 package com.example.bas.backend.controller;
 
-import com.example.bas.backend.model.AppUser;
-import com.example.bas.backend.model.AppUserForm;
-import com.example.bas.backend.model.PasswordResetForm;
-import com.example.bas.backend.model.PasswordResetToken;
+import com.example.bas.backend.model.*;
 import com.example.bas.backend.security.configuration.JwtTokenUtil;
 import com.example.bas.backend.security.models.JwtRequest;
 import com.example.bas.backend.security.models.JwtResponse;
-import com.example.bas.backend.service.AppUserService;
-import com.example.bas.backend.service.EmailService;
-import com.example.bas.backend.service.PasswordResetTokenService;
-import com.example.bas.backend.service.UserRoleService;
+import com.example.bas.backend.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,13 +24,16 @@ import java.util.UUID;
 @RequestMapping("/bas/user")
 public class AppUserController {
 
-
+    private final JwtTokenUtil jwtTokenUtil;
+    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+
     private final UserRoleService userRoleService;
     private final AppUserService appUserService;
-    private final JwtTokenUtil jwtTokenUtil;
     private final PasswordResetTokenService passwordResetTokenService;
     private final EmailService emailService;
+    private final EntryService entryService;
+    private final AdditionalInfoService additionalInfoService;
 
     @GetMapping(value = "/role", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
@@ -49,7 +47,13 @@ public class AppUserController {
     public @ResponseBody
     ResponseEntity<?> register(@Valid @RequestBody final AppUser user) {
         user.setRole(userRoleService.getRoleByName("ROLE_USER"));
-        return appUserService.save(user) ? ResponseEntity.status(201).body("Successfully add " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+        if (appUserService.save(user)) {
+            emailService.send(user.getEmail(), "Account created", "Your account has been created " + user.getUsername() + "\nWelcome to our app!");
+            return ResponseEntity.status(201).body("Successfully add " + getClass().getName());
+        } else {
+            return ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+        }
+
     }
 
     @PostMapping(value = "/login", produces = "application/json")
@@ -71,7 +75,6 @@ public class AppUserController {
     @PutMapping(value = "/account", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updateAccount(@Valid @RequestBody final AppUserForm form) {
-        System.out.println(form);
         AppUser user = appUserService.findById(form.getId());
         user.setFirstName(form.getFirstName());
         user.setLastName(form.getLastName());
@@ -84,6 +87,28 @@ public class AppUserController {
             return appUserService.update(user, true) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
         }
         return appUserService.update(user, false) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+    }
+
+    @DeleteMapping(value = "/account", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> deleteAccount(@Valid @RequestBody final AppUserForm form) {
+        AppUser user = appUserService.findById(form.getId());
+        if (passwordEncoder.matches(form.getPassword(), user.getPassword())) {
+            for (Entry entry : entryService.findAllByUserId(user.getId())) {
+                entryService.deleteById(entry.getId());
+            }
+            for (AdditionalInfo info : additionalInfoService.findAllByUserId(user.getId())) {
+                additionalInfoService.deleteById(info.getId());
+            }
+            for (PasswordResetToken resetToken : passwordResetTokenService.findAllByUserId(user.getId())) {
+                passwordResetTokenService.deleteById(resetToken.getId());
+            }
+            emailService.send(user.getEmail(), "Account removed", "Your account has been removed.\nThank you for using our app!");
+            appUserService.deleteById(user.getId());
+            return ResponseEntity.status(200).body("Successfully updated " + getClass().getName());
+        } else {
+            return ResponseEntity.status(400).body("Couldn't remove user");
+        }
     }
 
     @PostMapping(value = "/forgot-password", produces = "application/json")
@@ -103,7 +128,7 @@ public class AppUserController {
 
     @PostMapping(value = "/reset-password", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> postResetPassword(@Valid @RequestBody final PasswordResetForm form){
+    public ResponseEntity<?> postResetPassword(@Valid @RequestBody final PasswordResetForm form) {
         PasswordResetToken resetToken = passwordResetTokenService.findByToken(form.getToken());
         AppUser user = appUserService.findById(resetToken.getUser().getId());
         user.setPassword(form.getPassword());
