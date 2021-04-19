@@ -6,4 +6,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public interface AppUserService extends BasicService<AppUser, Long>, UserDetailsService {
 
     boolean update(AppUser user, boolean changedPassword);
+
+    AppUser findUserByEmail(String userEmail);
 }

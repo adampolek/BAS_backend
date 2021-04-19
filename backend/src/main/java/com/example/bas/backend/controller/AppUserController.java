@@ -2,10 +2,14 @@ package com.example.bas.backend.controller;
 
 import com.example.bas.backend.model.AppUser;
 import com.example.bas.backend.model.AppUserForm;
+import com.example.bas.backend.model.PasswordResetForm;
+import com.example.bas.backend.model.PasswordResetToken;
 import com.example.bas.backend.security.configuration.JwtTokenUtil;
 import com.example.bas.backend.security.models.JwtRequest;
 import com.example.bas.backend.security.models.JwtResponse;
 import com.example.bas.backend.service.AppUserService;
+import com.example.bas.backend.service.EmailService;
+import com.example.bas.backend.service.PasswordResetTokenService;
 import com.example.bas.backend.service.UserRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,7 +19,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.UUID;
 
 @CrossOrigin
 @RequiredArgsConstructor
@@ -23,10 +29,13 @@ import javax.validation.Valid;
 @RequestMapping("/bas/user")
 public class AppUserController {
 
+
     private final AuthenticationManager authenticationManager;
     private final UserRoleService userRoleService;
     private final AppUserService appUserService;
     private final JwtTokenUtil jwtTokenUtil;
+    private final PasswordResetTokenService passwordResetTokenService;
+    private final EmailService emailService;
 
     @GetMapping(value = "/role", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
@@ -75,5 +84,29 @@ public class AppUserController {
             return appUserService.update(user, true) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
         }
         return appUserService.update(user, false) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+    }
+
+    @PostMapping(value = "/forgot-password", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody final AppUserForm form, HttpServletRequest request) {
+        AppUser user = appUserService.findUserByEmail(form.getEmail());
+        PasswordResetToken token = PasswordResetToken.builder()
+                .token(UUID.randomUUID().toString())
+                .user(user)
+                .build();
+        token.setExpiryDate(30);
+        passwordResetTokenService.save(token);
+        String url = request.getScheme() + "://" + request.getServerName() + ":3000";
+        emailService.send(user.getEmail(), "Reset password", url + "/change?token=" + token.getToken());
+        return ResponseEntity.status(200).body("Successfully sent email");
+    }
+
+    @PostMapping(value = "/reset-password", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> postResetPassword(@Valid @RequestBody final PasswordResetForm form){
+        PasswordResetToken resetToken = passwordResetTokenService.findByToken(form.getToken());
+        AppUser user = appUserService.findById(resetToken.getUser().getId());
+        user.setPassword(form.getPassword());
+        return appUserService.update(user, true) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
     }
 }

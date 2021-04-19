@@ -20,10 +20,10 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
 
     @Override
     public boolean save(AppUser object) {
-        if(!repo.existsByUsername(object.getUsername())){
+        if (!repo.existsByUsername(object.getUsername())) {
             object.setPassword(passwordEncoder.encode(object.getPassword()));
             return super.save(object);
-        } else{
+        } else {
             return false;
         }
     }
@@ -41,9 +41,20 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
 
     @Override
     public boolean update(AppUser user, boolean changedPassword) {
-        if(changedPassword){
+        if (changedPassword) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         return super.save(user);
+    }
+
+    @Override
+    public AppUser findUserByEmail(String userEmail) {
+        AppUser user = new AppUser();
+        try {
+            user = repo.findByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User with that email doesn't exist"));
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+        return user;
     }
 }

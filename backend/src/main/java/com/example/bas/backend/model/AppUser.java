@@ -26,8 +26,10 @@ public class AppUser implements UserDetails {
     private Long id;
     private String firstName;
     private String lastName;
+    @Column(unique = true)
     private String username;
     private String password;
+    @Column(unique = true)
     private String email;
     private Date birthDate;
     private Integer height;
@@ -38,9 +40,9 @@ public class AppUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        UserRole role = this.getRole();
+        UserRole userRole = this.getRole();
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(role.getName()));
+        authorities.add(new SimpleGrantedAuthority(userRole.getName()));
         return authorities;
     }
 
