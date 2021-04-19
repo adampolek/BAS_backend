@@ -49,7 +49,7 @@ public class AppUserController {
     ResponseEntity<?> login(@Valid @RequestBody final JwtRequest user) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         AppUser userDetails = (AppUser) appUserService.loadUserByUsername(user.getUsername());
-        return ResponseEntity.ok(new JwtResponse(jwtTokenUtil.generateToken(userDetails)));
+        return ResponseEntity.ok(new JwtResponse(jwtTokenUtil.generateToken(userDetails, user.isRememberMe())));
     }
 
     @GetMapping(value = "/account", produces = "application/json")
@@ -70,10 +70,10 @@ public class AppUserController {
         user.setGender(form.getGender());
         user.setBirthDate(form.getBirthDate());
         user.setEmail(form.getEmail());
-        if(!user.getPassword().equals(form.getPassword())){
+        if (!user.getPassword().equals(form.getPassword())) {
             user.setPassword(form.getPassword());
-            return appUserService.update(user,true) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+            return appUserService.update(user, true) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
         }
-        return appUserService.update(user,false) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+        return appUserService.update(user, false) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
     }
 }
