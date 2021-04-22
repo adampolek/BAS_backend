@@ -6,12 +6,11 @@ import com.example.bas.backend.model.Entry;
 import com.example.bas.backend.service.ClassifierService;
 import com.example.bas.backend.service.EntryService;
 import com.google.gson.Gson;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collections;
@@ -45,5 +44,17 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
         int predictionValue = Integer.parseInt(String.valueOf(predict.get(predict.size() - 1).charAt(1)));
         form.setHealthy(predictionValue == 1);
         return super.save(form, authentication);
+    }
+
+    @GetMapping(value = "/entry", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getEntryFromDay(Authentication authentication, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date entryDate) {
+        return ResponseEntity.ok(new Gson().toJson(service.findByEntryDate(entryDate)));
+    }
+
+    @GetMapping(value = "/entry_days", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getEntryBetweenDays(Authentication authentication, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date stop) {
+        return ResponseEntity.ok(new Gson().toJson(service.findAllByEntryDateBetween(start, stop)));
     }
 }

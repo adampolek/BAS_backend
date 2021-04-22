@@ -132,6 +132,11 @@ public class AppUserController {
         PasswordResetToken resetToken = passwordResetTokenService.findByToken(form.getToken());
         AppUser user = appUserService.findById(resetToken.getUser().getId());
         user.setPassword(form.getPassword());
-        return appUserService.update(user, true) ? ResponseEntity.status(201).body("Successfully updated " + getClass().getName()) : ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+        if (appUserService.update(user, true)) {
+            passwordResetTokenService.deleteById(resetToken.getId());
+            return ResponseEntity.status(201).body("Successfully updated " + getClass().getName());
+
+        }
+        return ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
     }
 }
