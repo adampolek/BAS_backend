@@ -51,7 +51,7 @@ public class AppUserController {
             emailService.send(user.getEmail(), "Account created", "Your account has been created " + user.getUsername() + "\nWelcome to our app!");
             return ResponseEntity.status(201).body("Successfully add " + getClass().getName());
         } else {
-            return ResponseEntity.badRequest().body("No " + getClass().getName() + " added");
+            return ResponseEntity.badRequest().body("User with this login or email already exists, try another one!");
         }
 
     }
