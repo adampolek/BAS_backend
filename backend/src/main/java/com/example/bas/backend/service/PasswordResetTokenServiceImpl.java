@@ -16,7 +16,7 @@ public class PasswordResetTokenServiceImpl extends BasicServiceImpl<PasswordRese
 
     @Override
     public PasswordResetToken findByToken(String token) {
-        PasswordResetToken passwordResetToken = new PasswordResetToken();
+        PasswordResetToken passwordResetToken = null;
         try {
             passwordResetToken = repo.findByToken(token).orElseThrow(() -> new UsernameNotFoundException("Token doesn't exist"));
         } catch (final Exception e) {
@@ -27,7 +27,7 @@ public class PasswordResetTokenServiceImpl extends BasicServiceImpl<PasswordRese
 
     @Override
     public List<PasswordResetToken> findAllByUserId(Long id) {
-        List<PasswordResetToken> passwordResetToken = new ArrayList<>();
+        List<PasswordResetToken> passwordResetToken = null;
         try {
             passwordResetToken = repo.findAllByUserId(id).orElseThrow(() -> new UsernameNotFoundException("Token doesn't exist"));
         } catch (final Exception e) {

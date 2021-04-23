@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface EntryRepo extends JpaRepository<Entry, Long> {
     Optional<List<Entry>> findAllByUserId(Long id);
-    Optional<Entry> findByEntryDate(Date entryDate);
-    Optional<List<Entry>> findAllByEntryDateBetween(Date start, Date stop);
+    Optional<Entry> findByEntryDateAndUserId(Date entryDate, Long userId);
+    Optional<List<Entry>> findAllByEntryDateBetweenAndUserId(Date start, Date stop, Long userId);
 }

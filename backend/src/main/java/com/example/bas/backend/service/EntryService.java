@@ -8,7 +8,7 @@ import java.util.List;
 public interface EntryService extends BasicService<Entry, Long> {
     List<Entry> findAllByUserId(Long id);
 
-    Entry findByEntryDate(Date entryDate);
+    Entry findByEntryDateAndUserId(Date entryDate, Long id);
 
-    List<Entry> findAllByEntryDateBetween(Date start, Date stop);
+    List<Entry> findAllByEntryDateBetweenAndUserId(Date start, Date stop, Long id);
 }

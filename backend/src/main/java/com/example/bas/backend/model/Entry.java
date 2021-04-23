@@ -24,6 +24,7 @@ public class Entry {
     private Integer glucose;
     private Integer insulin;
     private Integer bloodPressure;
+    @Temporal(TemporalType.DATE)
     private Date entryDate;
     private Boolean healthy;
 }

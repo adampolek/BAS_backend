@@ -30,7 +30,7 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        AppUser user = new AppUser();
+        AppUser user = null;
         try {
             user = repo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User with that login doesn't exist"));
         } catch (final Exception e) {
@@ -49,7 +49,7 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
 
     @Override
     public AppUser findUserByEmail(String userEmail) {
-        AppUser user = new AppUser();
+        AppUser user = null;
         try {
             user = repo.findByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User with that email doesn't exist"));
         } catch (final Exception e) {

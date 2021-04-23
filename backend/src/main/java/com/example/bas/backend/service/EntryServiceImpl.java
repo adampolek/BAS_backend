@@ -18,7 +18,7 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
 
     @Override
     public List<Entry> findAllByUserId(Long id) {
-        List<Entry> entry = new ArrayList<>();
+        List<Entry> entry = null;
         try {
             entry = repo.findAllByUserId(id).orElseThrow(() -> new UsernameNotFoundException("User with that id doesn't exist"));
         } catch (final Exception e) {
@@ -28,10 +28,10 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
     }
 
     @Override
-    public Entry findByEntryDate(Date entryDate) {
-        Entry entry = new Entry();
+    public Entry findByEntryDateAndUserId(Date entryDate, Long id) {
+        Entry entry = null;
         try {
-            entry = repo.findByEntryDate(entryDate).orElseThrow(() -> new Exception("Entry hasn't been found"));
+            entry = repo.findByEntryDateAndUserId(entryDate,id).orElseThrow(() -> new Exception("Entry hasn't been found"));
         } catch (final Exception e) {
             e.printStackTrace();
         }
@@ -39,10 +39,10 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
     }
 
     @Override
-    public List<Entry> findAllByEntryDateBetween(Date start, Date stop) {
-        List<Entry> entries = new ArrayList<>();
+    public List<Entry> findAllByEntryDateBetweenAndUserId(Date start, Date stop, Long id) {
+        List<Entry> entries = null;
         try {
-            entries = repo.findAllByEntryDateBetween(start, stop).orElseThrow(() -> new Exception("Entry hasn't been found"));
+            entries = repo.findAllByEntryDateBetweenAndUserId(start, stop,id).orElseThrow(() -> new Exception("Entry hasn't been found"));
         } catch (final Exception e) {
             e.printStackTrace();
         }

@@ -31,9 +31,11 @@ public class AppUser implements UserDetails {
     private String password;
     @Column(unique = true)
     private String email;
+    @Temporal(TemporalType.DATE)
     private Date birthDate;
     private Integer height;
     private String gender;
+    @Temporal(TemporalType.DATE)
     private Date lastLogin;
     @OneToOne
     private UserRole role;
