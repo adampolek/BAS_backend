@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -24,12 +25,22 @@ public class AdditionalInfoController extends BasicController<AdditionalInfoServ
 
     @GetMapping(value = "/day", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getEntryFromDay(Authentication authentication, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date entryDate) {
+    public ResponseEntity<?> getInfoFromDay(Authentication authentication, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date entryDate) {
         AdditionalInfo info = service.findByUserIdAndEntryDate(((AppUser) authentication.getPrincipal()).getId(), entryDate);
         if (info == null) {
             return ResponseEntity.status(400).body("Item doesn't exist");
         }
         return ResponseEntity.ok(info);
+    }
+
+    @GetMapping(value = "/days", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getInfoBetweenDays(Authentication authentication, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date stop) {
+        List<AdditionalInfo> infos = service.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(start, stop, ((AppUser) authentication.getPrincipal()).getId());
+        if (infos == null) {
+            return ResponseEntity.status(400).body("Item doesn't exist");
+        }
+        return ResponseEntity.ok(infos);
     }
 
     @PutMapping(value = "/updateEntry", produces = "application/json")

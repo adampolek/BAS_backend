@@ -10,5 +10,5 @@ public interface EntryService extends BasicService<Entry, Long> {
 
     Entry findByEntryDateAndUserId(Date entryDate, Long id);
 
-    List<Entry> findAllByEntryDateBetweenAndUserId(Date start, Date stop, Long id);
+    List<Entry> findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(Date start, Date stop, Long id);
 }

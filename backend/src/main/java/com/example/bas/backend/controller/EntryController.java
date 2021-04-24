@@ -35,7 +35,11 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
 
     @Override
     public ResponseEntity<String> save(@Valid @RequestBody final Entry form, Authentication authentication) {
+
         AppUser user = (AppUser) authentication.getPrincipal();
+        if(service.findByEntryDateAndUserId(new Date(),user.getId()) != null){
+            return ResponseEntity.status(400).body("You have added an entry today");
+        }
         form.setUser(user);
         ClassifierEntry.ClassifierEntryBuilder classifierEntry = ClassifierEntry.builder()
                 .Gender(Collections.singletonList(user.getGender()))
@@ -72,7 +76,7 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
     @GetMapping(value = "/days", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getEntryBetweenDays(Authentication authentication, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date stop) {
-        List<Entry> entries = service.findAllByEntryDateBetweenAndUserId(start, stop, ((AppUser) authentication.getPrincipal()).getId());
+        List<Entry> entries = service.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(start, stop, ((AppUser) authentication.getPrincipal()).getId());
         if (entries == null) {
             return ResponseEntity.status(400).body("Item doesn't exist");
         }

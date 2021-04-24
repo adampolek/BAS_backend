@@ -8,4 +8,5 @@ import java.util.List;
 public interface AdditionalInfoService extends BasicService<AdditionalInfo, Long>{
     List<AdditionalInfo> findAllByUserId(Long id);
     AdditionalInfo findByUserIdAndEntryDate(Long userId, Date entryDate);
+    List<AdditionalInfo> findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(Date start, Date stop, Long id);
 }

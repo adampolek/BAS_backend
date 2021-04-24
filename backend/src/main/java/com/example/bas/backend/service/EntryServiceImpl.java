@@ -1,12 +1,10 @@
 package com.example.bas.backend.service;
 
-import com.example.bas.backend.model.AdditionalInfo;
 import com.example.bas.backend.model.Entry;
 import com.example.bas.backend.repo.EntryRepo;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -39,10 +37,10 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
     }
 
     @Override
-    public List<Entry> findAllByEntryDateBetweenAndUserId(Date start, Date stop, Long id) {
+    public List<Entry> findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(Date start, Date stop, Long id) {
         List<Entry> entries = null;
         try {
-            entries = repo.findAllByEntryDateBetweenAndUserId(start, stop,id).orElseThrow(() -> new Exception("Entry hasn't been found"));
+            entries = repo.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(start, stop,id).orElseThrow(() -> new Exception("Entry hasn't been found"));
         } catch (final Exception e) {
             e.printStackTrace();
         }
