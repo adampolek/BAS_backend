@@ -5,5 +5,5 @@ import java.util.List;
 public interface ClassifierService {
 
     List<String> predict(String classifier, String input, String save);
-    void train(String classifier);
+    List<String> train(String classifier);
 }

@@ -37,7 +37,7 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
     public ResponseEntity<String> save(@Valid @RequestBody final Entry form, Authentication authentication) {
 
         AppUser user = (AppUser) authentication.getPrincipal();
-        if(service.findByEntryDateAndUserId(new Date(),user.getId()) != null){
+        if (service.findByEntryDateAndUserId(new Date(), user.getId()) != null) {
             return ResponseEntity.status(400).body("You have added an entry today");
         }
         form.setUser(user);
@@ -48,7 +48,9 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
                 .Insulin(Collections.singletonList(form.getInsulin()))
                 .BMI(Collections.singletonList(form.getWeight() / (Math.pow((double) user.getHeight() / 100, 2))))
                 .Age(Collections.singletonList((int) ((new Date().getTime() - user.getBirthDate().getTime()) / (1000L * 60 * 60 * 24 * 365))));
-        List<String> predict = classifierService.predict("tree", new Gson().toJson(classifierEntry).replace("\"", "\\\""), "True");
+        List<String> predict = classifierService.predict("tree", new Gson().toJson(classifierEntry)
+//                .replace("\"", "\\\"")
+                , "True");
         int predictionValue = Integer.parseInt(String.valueOf(predict.get(predict.size() - 1).charAt(1)));
         form.setHealthy(predictionValue == 1);
         additionalInfoService.save(AdditionalInfo.builder()
@@ -61,6 +63,13 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
                 .entryDate(new Date())
                 .build());
         return super.save(form, authentication);
+    }
+
+    @GetMapping(value = "/train", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> train(Authentication authentication, @RequestParam String clf) {
+        List<String> errors = classifierService.train(clf);
+        return ResponseEntity.ok(errors);
     }
 
     @GetMapping(value = "/day", produces = "application/json")

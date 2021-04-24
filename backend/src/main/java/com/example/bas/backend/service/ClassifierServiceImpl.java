@@ -14,8 +14,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ClassifierServiceImpl implements ClassifierService {
 
-    //TODO Sciezke zmieniac trzeba
-    private static final String PATH = "python E:\\Studia\\6_semestr\\BAS_backend\\backend\\src\\main\\resources\\classifiers\\BAS_classifier\\main.py";
+    //TODO Sciezka lokalna
+//    private static final String PATH = "python ..\\BAS_classifier\\main.py";
+    //TODO Sciezka na serwerze
+    private static final String PATH = "python3 BAS_classifier/main.py";
 
     @Override
     public List<String> predict(String classifier, String input, String save) {
@@ -26,7 +28,7 @@ public class ClassifierServiceImpl implements ClassifierService {
             Process process = Runtime.getRuntime().exec(command);
             BufferedReader processReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             process.waitFor();
-            while (processReader.ready()){
+            while (processReader.ready()) {
                 line = processReader.readLine();
                 lines.add(line);
             }
@@ -37,11 +39,20 @@ public class ClassifierServiceImpl implements ClassifierService {
     }
 
     @Override
-    public void train(String classifier) {
+    public List<String> train(String classifier) {
+        List<String> lines = new ArrayList<>();
+        String line;
         try {
-           Runtime.getRuntime().exec(String.format("%s --job train --classifier %s", PATH, classifier));
-        } catch (IOException e) {
+            Process process = Runtime.getRuntime().exec(String.format("%s --job train --classifier %s", PATH, classifier));
+            BufferedReader processReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            process.waitFor();
+            while (processReader.ready()) {
+                line = processReader.readLine();
+                lines.add(line);
+            }
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        return lines;
     }
 }
