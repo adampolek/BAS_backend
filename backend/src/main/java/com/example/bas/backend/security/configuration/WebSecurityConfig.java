@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -54,7 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.csrf().disable().cors().and().headers().frameOptions().disable().and()
                 // dont authenticate this particular request
                 .authorizeRequests()
-//                .antMatchers(HttpMethod.POST, "/products").hasRole("ADMIN")
+                .antMatchers( "/bas/entry/train","/bas/entry/set_clf","/bas/entry/get_clf").hasRole("ADMIN")
 //                .antMatchers(HttpMethod.PUT, "/products/product/**").hasRole("ADMIN")
 //                .antMatchers(HttpMethod.DELETE, "/products/product/**").hasRole("ADMIN")
                 .antMatchers("/bas/user/login",

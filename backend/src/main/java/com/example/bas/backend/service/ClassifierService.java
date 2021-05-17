@@ -4,6 +4,10 @@ import java.util.List;
 
 public interface ClassifierService {
 
-    List<String> predict(String classifier, String input, String save);
-    List<String> train(String classifier);
+    List<String> predict(String input, String save);
+    List<String> train();
+
+    void setClassifier(String clf);
+
+    String getClassifier();
 }

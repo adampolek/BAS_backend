@@ -1,26 +1,41 @@
 package com.example.bas.backend.service;
 
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DefaultPropertiesPersister;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 @Service
-@RequiredArgsConstructor
 public class ClassifierServiceImpl implements ClassifierService {
 
+
+    private String classifier;
+
     //TODO Sciezka lokalna
-//    private static final String PATH = "python ..\\BAS_classifier\\main.py";
+    private static final String PATH = "python ..\\BAS_classifier\\main.py";
+
     //TODO Sciezka na serwerze
-    private static final String PATH = "python3 BAS_classifier/main.py";
+//    private static final String PATH = "python3 BAS_classifier/main.py";
+
+
+    public ClassifierServiceImpl() {
+        File f = new File("backend\\src\\main\\resources\\classifier.properties");
+        try {
+            InputStream in = new FileInputStream(f);
+            Properties props = new Properties();
+            props.load(in);
+            this.classifier = (String) props.get("bas.classifier");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
-    public List<String> predict(String classifier, String input, String save) {
+    public List<String> predict(String input, String save) {
         List<String> lines = new ArrayList<>();
         String line;
         try {
@@ -39,7 +54,7 @@ public class ClassifierServiceImpl implements ClassifierService {
     }
 
     @Override
-    public List<String> train(String classifier) {
+    public List<String> train() {
         List<String> lines = new ArrayList<>();
         String line;
         try {
@@ -54,5 +69,25 @@ public class ClassifierServiceImpl implements ClassifierService {
             e.printStackTrace();
         }
         return lines;
+    }
+
+    @Override
+    public void setClassifier(String clf) {
+        this.classifier = clf;
+        Properties props = new Properties();
+        props.setProperty("bas.classifier", clf);
+        File f = new File("src/main/resources/classifier.properties");
+        try {
+            OutputStream out = new FileOutputStream(f);
+            DefaultPropertiesPersister p = new DefaultPropertiesPersister();
+            p.store(props, out, "Classifier properties");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public String getClassifier() {
+        return this.classifier;
     }
 }

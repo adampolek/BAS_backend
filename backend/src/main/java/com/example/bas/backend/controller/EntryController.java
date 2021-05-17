@@ -15,9 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @CrossOrigin
 @RestController
@@ -48,11 +46,11 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
                 .Insulin(Collections.singletonList(form.getInsulin()))
                 .BMI(Collections.singletonList(form.getWeight() / (Math.pow((double) user.getHeight() / 100, 2))))
                 .Age(Collections.singletonList((int) ((new Date().getTime() - user.getBirthDate().getTime()) / (1000L * 60 * 60 * 24 * 365))));
-        List<String> predict = classifierService.predict("tree", new Gson().toJson(classifierEntry)
-//                .replace("\"", "\\\"")
+        List<String> predict = classifierService.predict(new Gson().toJson(classifierEntry)
+                        .replace("\"", "\\\"")                                      //zakomentować linię przed wrzuceniem na serwer
                 , "True");
         int predictionValue = Integer.parseInt(String.valueOf(predict.get(predict.size() - 1).charAt(1)));
-        form.setHealthy(predictionValue == 1);
+        form.setHealthy(predictionValue == 0);
         additionalInfoService.save(AdditionalInfo.builder()
                 .user(user)
                 .cigarettesAmount(0)
@@ -67,8 +65,8 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
 
     @GetMapping(value = "/train", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> train(Authentication authentication, @RequestParam String clf) {
-        List<String> errors = classifierService.train(clf);
+    public ResponseEntity<?> train(Authentication authentication) {
+        List<String> errors = classifierService.train();
         return ResponseEntity.ok(errors);
     }
 
@@ -90,5 +88,25 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
             return ResponseEntity.status(400).body("Item doesn't exist");
         }
         return ResponseEntity.ok(entries);
+    }
+
+    @GetMapping(value = "/set_clf", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> setClassifier(Authentication authentication, @RequestParam String clf) {
+        classifierService.setClassifier(clf);
+        return ResponseEntity.ok("Classifier set to " + clf);
+    }
+
+    @GetMapping(value = "/get_clf", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getClassifier(Authentication authentication) {
+        return ResponseEntity.ok(classifierService.getClassifier());
+    }
+
+    @GetMapping(value = "/get_all_clf", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getAllClassifiers(Authentication authentication) {
+        List<String> classifiers = new ArrayList<>(Arrays.asList("tree", "knn", "net"));
+        return ResponseEntity.ok(classifiers);
     }
 }
