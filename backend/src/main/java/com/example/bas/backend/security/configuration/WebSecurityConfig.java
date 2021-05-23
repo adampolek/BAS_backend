@@ -53,17 +53,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.csrf().disable().cors().and().headers().frameOptions().disable().and()
                 // dont authenticate this particular request
                 .authorizeRequests()
-                .antMatchers( "/bas/entry/train","/bas/entry/set_clf","/bas/entry/get_clf").hasRole("ADMIN")
+                .antMatchers("/bas/entry/train", "/bas/entry/set_clf", "/bas/entry/get_clf",
+                        "/bas/entry/get_all_clf", "/bas/entry/get_csv").hasRole("ADMIN")
 //                .antMatchers(HttpMethod.PUT, "/products/product/**").hasRole("ADMIN")
 //                .antMatchers(HttpMethod.DELETE, "/products/product/**").hasRole("ADMIN")
                 .antMatchers("/bas/user/login",
                         "/bas/user/register",
                         "/bas/user/forgot-password",
                         "/bas/user/reset-password").permitAll()
-                .anyRequest().authenticated().and().
+                .anyRequest()
+                .authenticated()
+                .and()
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
-                        exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
+                .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         // Add a filter to validate the tokens with every request

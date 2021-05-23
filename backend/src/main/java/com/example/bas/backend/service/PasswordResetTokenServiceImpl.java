@@ -5,11 +5,13 @@ import com.example.bas.backend.repo.PasswordResetTokenRepo;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Service
 public class PasswordResetTokenServiceImpl extends BasicServiceImpl<PasswordResetToken, PasswordResetTokenRepo, Long> implements PasswordResetTokenService {
+    private static final Logger logger = Logger.getLogger(PasswordResetTokenServiceImpl.class.getName());
+
     public PasswordResetTokenServiceImpl(PasswordResetTokenRepo passwordResetTokenRepo) {
         super(passwordResetTokenRepo);
     }
@@ -20,7 +22,7 @@ public class PasswordResetTokenServiceImpl extends BasicServiceImpl<PasswordRese
         try {
             passwordResetToken = repo.findByToken(token).orElseThrow(() -> new UsernameNotFoundException("Token doesn't exist"));
         } catch (final Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
         return passwordResetToken;
     }
@@ -29,9 +31,9 @@ public class PasswordResetTokenServiceImpl extends BasicServiceImpl<PasswordRese
     public List<PasswordResetToken> findAllByUserId(Long id) {
         List<PasswordResetToken> passwordResetToken = null;
         try {
-            passwordResetToken = repo.findAllByUserId(id).orElseThrow(() -> new UsernameNotFoundException("Token doesn't exist"));
+            passwordResetToken = repo.findAllByUserId(id).orElseThrow(() -> new UsernameNotFoundException("Token for that user id doesn't exist"));
         } catch (final Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
         return passwordResetToken;
     }

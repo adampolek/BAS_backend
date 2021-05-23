@@ -11,6 +11,12 @@ import java.util.Optional;
 @Repository
 public interface AdditionalInfoRepo extends JpaRepository<AdditionalInfo, Long> {
     Optional<List<AdditionalInfo>> findAllByUserId(Long id);
+
     Optional<AdditionalInfo> findByUserIdAndEntryDate(Long userId, Date entryDate);
+
     Optional<List<AdditionalInfo>> findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(Date start, Date stop, Long userId);
+
+    Optional<List<AdditionalInfo>> findAllByEntryDateAndSleepHoursLessThan(Date date, Double sleepHours);
+
+    Optional<List<AdditionalInfo>> findAllByEntryDate(Date date);
 }

@@ -1,4 +1,4 @@
-package com.example.bas.backend.model;
+package com.example.bas.backend.model.forms;
 
 import lombok.*;
 

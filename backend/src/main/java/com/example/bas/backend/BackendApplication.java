@@ -1,15 +1,14 @@
 package com.example.bas.backend;
 
-import com.example.bas.backend.model.UserRole;
 import com.example.bas.backend.service.UserRoleService;
 import lombok.AllArgsConstructor;
-import org.apache.catalina.User;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @AllArgsConstructor
 @SpringBootApplication
+@EnableScheduling
 public class BackendApplication
 //		implements CommandLineRunner
 {

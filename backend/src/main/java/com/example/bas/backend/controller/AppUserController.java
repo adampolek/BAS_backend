@@ -1,6 +1,11 @@
 package com.example.bas.backend.controller;
 
-import com.example.bas.backend.model.*;
+import com.example.bas.backend.model.AdditionalInfo;
+import com.example.bas.backend.model.AppUser;
+import com.example.bas.backend.model.Entry;
+import com.example.bas.backend.model.PasswordResetToken;
+import com.example.bas.backend.model.forms.AppUserForm;
+import com.example.bas.backend.model.forms.PasswordResetForm;
 import com.example.bas.backend.security.configuration.JwtTokenUtil;
 import com.example.bas.backend.security.models.JwtRequest;
 import com.example.bas.backend.security.models.JwtResponse;
@@ -16,13 +21,18 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 @CrossOrigin
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/bas/user")
 public class AppUserController {
+
+    private static final Logger logger = Logger.getLogger(AppUserController.class.getName());
 
     private final JwtTokenUtil jwtTokenUtil;
     private final PasswordEncoder passwordEncoder;
@@ -39,6 +49,8 @@ public class AppUserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getRole(Authentication authentication) {
         AppUser user = (AppUser) authentication.getPrincipal();
+        user.setLastLogin(new Date());
+        appUserService.update(user, false);
         return ResponseEntity.ok(user.getRole().getName());
     }
 
@@ -94,14 +106,23 @@ public class AppUserController {
     public ResponseEntity<?> deleteAccount(@Valid @RequestBody final AppUserForm form) {
         AppUser user = appUserService.findById(form.getId());
         if (passwordEncoder.matches(form.getPassword(), user.getPassword())) {
-            for (Entry entry : entryService.findAllByUserId(user.getId())) {
-                entryService.deleteById(entry.getId());
+            List<Entry> userEntries = entryService.findAllByUserId(user.getId());
+            if (userEntries != null) {
+                for (Entry entry : userEntries) {
+                    entryService.deleteById(entry.getId());
+                }
             }
-            for (AdditionalInfo info : additionalInfoService.findAllByUserId(user.getId())) {
-                additionalInfoService.deleteById(info.getId());
+            List<AdditionalInfo> userInfos = additionalInfoService.findAllByUserId(user.getId());
+            if (userInfos != null) {
+                for (AdditionalInfo info : userInfos) {
+                    additionalInfoService.deleteById(info.getId());
+                }
             }
-            for (PasswordResetToken resetToken : passwordResetTokenService.findAllByUserId(user.getId())) {
-                passwordResetTokenService.deleteById(resetToken.getId());
+            List<PasswordResetToken> userResetTokens = passwordResetTokenService.findAllByUserId(user.getId());
+            if (userResetTokens != null) {
+                for (PasswordResetToken resetToken : userResetTokens) {
+                    passwordResetTokenService.deleteById(resetToken.getId());
+                }
             }
             emailService.send(user.getEmail(), "Account removed", "Your account has been removed.\nThank you for using our app!");
             appUserService.deleteById(user.getId());
@@ -130,6 +151,9 @@ public class AppUserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> postResetPassword(@Valid @RequestBody final PasswordResetForm form) {
         PasswordResetToken resetToken = passwordResetTokenService.findByToken(form.getToken());
+        if (resetToken.isExpired()) {
+            return ResponseEntity.badRequest().body("Token has expired, reset your password again");
+        }
         AppUser user = appUserService.findById(resetToken.getUser().getId());
         user.setPassword(form.getPassword());
         if (appUserService.update(user, true)) {

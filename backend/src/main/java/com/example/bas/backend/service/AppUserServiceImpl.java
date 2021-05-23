@@ -8,10 +8,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.logging.Logger;
+
 @Service
 public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, Long> implements AppUserService {
 
     private final PasswordEncoder passwordEncoder;
+    private static final Logger logger = Logger.getLogger(AppUserServiceImpl.class.getName());
 
     public AppUserServiceImpl(final AppUserRepo appUserRepo, @Lazy final PasswordEncoder passwordEncoder) {
         super(appUserRepo);
@@ -34,7 +37,7 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
         try {
             user = repo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User with that login doesn't exist"));
         } catch (final Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
         return user;
     }
@@ -53,7 +56,7 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
         try {
             user = repo.findByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User with that email doesn't exist"));
         } catch (final Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
         return user;
     }

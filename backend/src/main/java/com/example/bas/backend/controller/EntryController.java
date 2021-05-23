@@ -2,8 +2,8 @@ package com.example.bas.backend.controller;
 
 import com.example.bas.backend.model.AdditionalInfo;
 import com.example.bas.backend.model.AppUser;
-import com.example.bas.backend.model.ClassifierEntry;
 import com.example.bas.backend.model.Entry;
+import com.example.bas.backend.model.forms.ClassifierEntry;
 import com.example.bas.backend.service.AdditionalInfoService;
 import com.example.bas.backend.service.ClassifierService;
 import com.example.bas.backend.service.EntryService;
@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.*;
+import java.util.logging.Logger;
 
 @CrossOrigin
 @RestController
 @RequestMapping("/bas/entry")
 public class EntryController extends BasicController<EntryService, Entry, Long> {
 
+    private static final Logger logger = Logger.getLogger(EntryController.class.getName());
     private final ClassifierService classifierService;
     private final AdditionalInfoService additionalInfoService;
 
@@ -39,18 +41,22 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
             return ResponseEntity.status(400).body("You have added an entry today");
         }
         form.setUser(user);
-        ClassifierEntry.ClassifierEntryBuilder classifierEntry = ClassifierEntry.builder()
+        ClassifierEntry classifierEntry = ClassifierEntry.builder()
                 .Gender(Collections.singletonList(user.getGender()))
                 .Glucose(Collections.singletonList(form.getGlucose()))
                 .BloodPressure(Collections.singletonList(form.getBloodPressure()))
                 .Insulin(Collections.singletonList(form.getInsulin()))
                 .BMI(Collections.singletonList(form.getWeight() / (Math.pow((double) user.getHeight() / 100, 2))))
-                .Age(Collections.singletonList((int) ((new Date().getTime() - user.getBirthDate().getTime()) / (1000L * 60 * 60 * 24 * 365))));
+                .Age(Collections.singletonList((int) ((new Date().getTime() - user.getBirthDate().getTime()) / (1000L * 60 * 60 * 24 * 365)))).build();
         List<String> predict = classifierService.predict(new Gson().toJson(classifierEntry)
                         .replace("\"", "\\\"")                                      //zakomentować linię przed wrzuceniem na serwer
                 , "True");
-        int predictionValue = Integer.parseInt(String.valueOf(predict.get(predict.size() - 1).charAt(1)));
-        form.setHealthy(predictionValue == 0);
+        if (predict.isEmpty()) {
+            logger.warning("There was an error with your classifier.");
+        } else {
+            int predictionValue = Integer.parseInt(String.valueOf(predict.get(predict.size() - 1).charAt(1)));
+            form.setHealthy(predictionValue == 0);
+        }
         additionalInfoService.save(AdditionalInfo.builder()
                 .user(user)
                 .cigarettesAmount(0)
@@ -61,13 +67,6 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
                 .entryDate(new Date())
                 .build());
         return super.save(form, authentication);
-    }
-
-    @GetMapping(value = "/train", produces = "application/json")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> train(Authentication authentication) {
-        List<String> errors = classifierService.train();
-        return ResponseEntity.ok(errors);
     }
 
     @GetMapping(value = "/day", produces = "application/json")
@@ -90,6 +89,13 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
         return ResponseEntity.ok(entries);
     }
 
+    @GetMapping(value = "/train", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> train(Authentication authentication) {
+        List<String> errors = classifierService.train();
+        return ResponseEntity.ok(errors);
+    }
+
     @GetMapping(value = "/set_clf", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> setClassifier(Authentication authentication, @RequestParam String clf) {
@@ -109,4 +115,11 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
         List<String> classifiers = new ArrayList<>(Arrays.asList("tree", "knn", "net"));
         return ResponseEntity.ok(classifiers);
     }
+
+    @GetMapping(value = "/get_csv", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getCSV(Authentication authentication) {
+        return ResponseEntity.ok(classifierService.getCSV());
+    }
+
 }
