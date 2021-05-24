@@ -85,8 +85,11 @@ public class AdditionalInfoController extends BasicController<AdditionalInfoServ
         }
         List<AdditionalInfo> todayUserInfo = service.findAllByEntryDate(today);
         List<AdditionalInfo> hoursLessThan = service.findAllByEntryDateAndSleepHoursLessThan(today, userInfo.getSleepHours());
-        if (todayUserInfo == null || hoursLessThan == null) {
+        if (todayUserInfo == null) {
             return ResponseEntity.status(400).body("Item doesn't exist");
+        }
+        if(hoursLessThan == null){
+            hoursLessThan = new ArrayList<>();
         }
         LocalDateTime weekAgoLocalDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).minusDays(6);
         LocalDateTime monthAgoLocalDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).minusDays(29);
