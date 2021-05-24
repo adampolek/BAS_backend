@@ -29,7 +29,7 @@ public class ClassifierServiceImpl implements ClassifierService {
 //    private static final String PATH = "BAS_classifier/";
 //    private static final String COMMAND = "python3 "+ PATH + "main.py;
     public ClassifierServiceImpl() {
-        File f = new File("backend\\src\\main\\resources\\classifier.properties");
+        File f = new File("backend/src/main/resources/classifier.properties");
         try {
             InputStream in = new FileInputStream(f);
             Properties props = new Properties();
@@ -82,7 +82,7 @@ public class ClassifierServiceImpl implements ClassifierService {
         this.classifier = clf;
         Properties props = new Properties();
         props.setProperty("bas.classifier", clf);
-        File f = new File("src/main/resources/classifier.properties");
+        File f = new File("backend/src/main/resources/classifier.properties");
         try {
             OutputStream out = new FileOutputStream(f);
             DefaultPropertiesPersister p = new DefaultPropertiesPersister();
