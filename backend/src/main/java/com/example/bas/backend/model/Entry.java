@@ -16,7 +16,7 @@ import java.util.Date;
 @EqualsAndHashCode
 public class Entry {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(cascade = CascadeType.MERGE)
     private AppUser user;
