@@ -44,6 +44,11 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
     }
 
     @Override
+    public boolean isEntrySet(Date entryDate, Long id) {
+        return repo.existsByEntryDateAndUserId(entryDate, id);
+    }
+
+    @Override
     public List<Entry> findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(Date start, Date stop, Long id) {
         List<Entry> entries = null;
         try {
