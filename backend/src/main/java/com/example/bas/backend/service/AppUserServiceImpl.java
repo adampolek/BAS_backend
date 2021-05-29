@@ -1,6 +1,9 @@
 package com.example.bas.backend.service;
 
+import com.example.bas.backend.model.AdditionalInfo;
 import com.example.bas.backend.model.AppUser;
+import com.example.bas.backend.model.Entry;
+import com.example.bas.backend.model.forms.DailyEntry;
 import com.example.bas.backend.repo.AppUserRepo;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,6 +11,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 @Service
@@ -16,9 +21,24 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
     private final PasswordEncoder passwordEncoder;
     private static final Logger logger = Logger.getLogger(AppUserServiceImpl.class.getName());
 
-    public AppUserServiceImpl(final AppUserRepo appUserRepo, @Lazy final PasswordEncoder passwordEncoder) {
+    private final AdditionalInfoService additionalInfoService;
+    private final EntryService entryService;
+    private final PasswordResetTokenService passwordResetTokenService;
+
+    public AppUserServiceImpl(final AppUserRepo appUserRepo, @Lazy final PasswordEncoder passwordEncoder, AdditionalInfoService additionalInfoService, EntryService entryService, PasswordResetTokenService passwordResetTokenService) {
         super(appUserRepo);
         this.passwordEncoder = passwordEncoder;
+        this.additionalInfoService = additionalInfoService;
+        this.entryService = entryService;
+        this.passwordResetTokenService = passwordResetTokenService;
+    }
+
+    @Override
+    public boolean deleteById(Long id) {
+        additionalInfoService.findAllByUserId(id);
+        entryService.findAllByUserId(id);
+        passwordResetTokenService.findAllByUserId(id);
+        return super.deleteById(id);
     }
 
     @Override
@@ -59,5 +79,36 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
             logger.warning(e.getMessage());
         }
         return user;
+    }
+
+    @Override
+    public List<DailyEntry> getAllEntriesForUserId(Long id) {
+        List<DailyEntry> dailyEntries = new ArrayList<>();
+        List<AdditionalInfo> infoList = additionalInfoService.findAllByUserId(id);
+        List<Entry> entryList = entryService.findAllByUserId(id);
+        for (Entry entry : entryList) {
+            AdditionalInfo thisDayInfo = null;
+            for (AdditionalInfo info : infoList) {
+                if (entry.getEntryDate().equals(info.getEntryDate())) {
+                    thisDayInfo = info;
+                    break;
+                }
+            }
+            DailyEntry dailyEntry = DailyEntry.builder()
+                    .entryDate(entry.getEntryDate())
+                    .cigarettesAmount(thisDayInfo != null ? thisDayInfo.getCigarettesAmount() : null)
+                    .sleepHours(thisDayInfo != null ? thisDayInfo.getSleepHours() : null)
+                    .glassesOfWater(thisDayInfo != null ? thisDayInfo.getGlassesOfWater() : null)
+                    .trainingHours(thisDayInfo != null ? thisDayInfo.getTrainingHours() : null)
+                    .alcoholAmount(thisDayInfo != null ? thisDayInfo.getAlcoholAmount() : null)
+                    .glucose(entry.getGlucose())
+                    .bloodPressure(entry.getBloodPressure())
+                    .insulin(entry.getInsulin())
+                    .weight(entry.getWeight())
+                    .healthy(entry.getHealthy())
+                    .build();
+            dailyEntries.add(dailyEntry);
+        }
+        return dailyEntries;
     }
 }

@@ -113,7 +113,7 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
         tempMap.put("weekly", Math.round(weeklyStatsInt.getAverage() * 100.0) / 100.0);
         tempMap.put("monthly", Math.round(monthlyStatsInt.getAverage() * 100.0) / 100.0);
         tempMap.put("yearly", Math.round(yearlyStatsInt.getAverage() * 100.0) / 100.0);
-        responseMap.put("cigarettes", tempMap);
+        responseMap.put("glucose", tempMap);
 
         weeklyStatsInt = weeklyUserInfo.stream().map(Entry::getInsulin).map(num -> num == null ? 0 : num).mapToInt(Integer::valueOf).summaryStatistics();
         monthlyStatsInt = monthlyUserInfo.stream().map(Entry::getInsulin).map(num -> num == null ? 0 : num).mapToInt(Integer::valueOf).summaryStatistics();
@@ -122,8 +122,16 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
         tempMap.put("weekly", Math.round(weeklyStatsInt.getAverage() * 100.0) / 100.0);
         tempMap.put("monthly", Math.round(monthlyStatsInt.getAverage() * 100.0) / 100.0);
         tempMap.put("yearly", Math.round(yearlyStatsInt.getAverage() * 100.0) / 100.0);
-        responseMap.put("training", tempMap);
+        responseMap.put("insulin", tempMap);
 
+        weeklyStatsInt = weeklyUserInfo.stream().map(Entry::getHealthy).map(num -> num ? 1 : 0).mapToInt(Integer::valueOf).summaryStatistics();
+        monthlyStatsInt = monthlyUserInfo.stream().map(Entry::getHealthy).map(num -> num ? 1 : 0).mapToInt(Integer::valueOf).summaryStatistics();
+        yearlyStatsInt = yearlyUserInfo.stream().map(Entry::getHealthy).map(num -> num ? 1 : 0).mapToInt(Integer::valueOf).summaryStatistics();
+        tempMap = new HashMap<>();
+        tempMap.put("weekly", (double) Math.round(weeklyStatsInt.getAverage() * 100.0));
+        tempMap.put("monthly", (double) (Math.round(monthlyStatsInt.getAverage() * 100.0)));
+        tempMap.put("yearly", (double) (Math.round(yearlyStatsInt.getAverage() * 100.0)));
+        responseMap.put("healthy", tempMap);
         return responseMap;
     }
 }

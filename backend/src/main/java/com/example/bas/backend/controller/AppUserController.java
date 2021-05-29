@@ -5,6 +5,7 @@ import com.example.bas.backend.model.AppUser;
 import com.example.bas.backend.model.Entry;
 import com.example.bas.backend.model.PasswordResetToken;
 import com.example.bas.backend.model.forms.AppUserForm;
+import com.example.bas.backend.model.forms.DailyEntry;
 import com.example.bas.backend.model.forms.PasswordResetForm;
 import com.example.bas.backend.security.configuration.JwtTokenUtil;
 import com.example.bas.backend.security.models.JwtRequest;
@@ -82,6 +83,14 @@ public class AppUserController {
     public ResponseEntity<?> getAccount(Authentication authentication) {
         AppUser user = (AppUser) authentication.getPrincipal();
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping(value = "/get_all_entries", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getAllDailyEntries(Authentication authentication) {
+        AppUser user = (AppUser) authentication.getPrincipal();
+        List<DailyEntry> dailyEntries = appUserService.getAllEntriesForUserId(user.getId());
+        return ResponseEntity.ok(dailyEntries);
     }
 
     @PutMapping(value = "/account", produces = "application/json")
