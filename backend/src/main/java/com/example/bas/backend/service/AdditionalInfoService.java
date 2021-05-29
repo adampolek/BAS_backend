@@ -4,6 +4,7 @@ import com.example.bas.backend.model.AdditionalInfo;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface AdditionalInfoService extends BasicService<AdditionalInfo, Long> {
     List<AdditionalInfo> findAllByUserId(Long id);
@@ -15,4 +16,6 @@ public interface AdditionalInfoService extends BasicService<AdditionalInfo, Long
     List<AdditionalInfo> findAllByEntryDateAndSleepHoursLessThan(Date date, Double sleepHours);
 
     List<AdditionalInfo> findAllByEntryDate(Date date);
+
+    Map<String, Map<String, Double>> generateAdditionalStats(Long id);
 }

@@ -11,13 +11,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @CrossOrigin
@@ -66,90 +62,10 @@ public class AdditionalInfoController extends BasicController<AdditionalInfoServ
     @GetMapping(value = "/additional_info_stats", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getAdditionalInfoStats(Authentication authentication) {
-        Map<String, Map<String, Double>> responseMap = new HashMap<>();
-        DoubleSummaryStatistics weeklyStats;
-        DoubleSummaryStatistics monthlyStats;
-        DoubleSummaryStatistics yearlyStats;
-        Map<String, Double> tempMap;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date today = new Date();
-        try {
-            today = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
-        } catch (ParseException e) {
-            logger.warning(e.getMessage());
+        Map<String, Map<String, Double>> responseMap = service.generateAdditionalStats(((AppUser) authentication.getPrincipal()).getId());
+        if (responseMap == null) {
+            return ResponseEntity.status(400).body("There was an error generating your stats");
         }
-        AppUser user = (AppUser) authentication.getPrincipal();
-        AdditionalInfo userInfo = service.findByUserIdAndEntryDate(user.getId(), today);
-        if (userInfo == null) {
-            return ResponseEntity.status(400).body("Data for user doesn't exist");
-        }
-        List<AdditionalInfo> todayUserInfo = service.findAllByEntryDate(today);
-        List<AdditionalInfo> hoursLessThan = service.findAllByEntryDateAndSleepHoursLessThan(today, userInfo.getSleepHours());
-        if (todayUserInfo == null) {
-            return ResponseEntity.status(400).body("Item doesn't exist");
-        }
-        if(hoursLessThan == null){
-            hoursLessThan = new ArrayList<>();
-        }
-        LocalDateTime weekAgoLocalDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).minusDays(6);
-        LocalDateTime monthAgoLocalDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).minusDays(29);
-        LocalDateTime yearAgoLocalDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).minusDays(364);
-
-        Date weekAgoDate = Date.from(weekAgoLocalDate.atZone(ZoneId.systemDefault()).toInstant());
-        Date monthAgoDate = Date.from(monthAgoLocalDate.atZone(ZoneId.systemDefault()).toInstant());
-        Date yearAgoDate = Date.from(yearAgoLocalDate.atZone(ZoneId.systemDefault()).toInstant());
-
-        List<AdditionalInfo> weeklyUserInfo = service.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(weekAgoDate, today, user.getId());
-        List<AdditionalInfo> monthlyUserInfo = service.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(monthAgoDate, today, user.getId());
-        List<AdditionalInfo> yearlyUserInfo = service.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(yearAgoDate, today, user.getId());
-
-        weeklyStats = weeklyUserInfo.stream().map(AdditionalInfo::getSleepHours).map(num -> num == null ? 0 : num).mapToDouble(Double::doubleValue).summaryStatistics();
-        monthlyStats = monthlyUserInfo.stream().map(AdditionalInfo::getSleepHours).map(num -> num == null ? 0 : num).mapToDouble(Double::doubleValue).summaryStatistics();
-        yearlyStats = yearlyUserInfo.stream().map(AdditionalInfo::getSleepHours).map(num -> num == null ? 0 : num).mapToDouble(Double::doubleValue).summaryStatistics();
-        tempMap = new HashMap<>();
-        tempMap.put("healthySleep", userInfo.getSleepHours() >= 6 && userInfo.getSleepHours() <= 8 ? 1.0 : 0.0);
-        tempMap.put("sleepHoursPercentage", hoursLessThan.size() / (double) todayUserInfo.size() * 100);
-        tempMap.put("weekly", weeklyStats.getAverage());
-        tempMap.put("monthly", monthlyStats.getAverage());
-        tempMap.put("yearly", yearlyStats.getAverage());
-        responseMap.put("sleep", tempMap);
-
-        weeklyStats = weeklyUserInfo.stream().map(AdditionalInfo::getAlcoholAmount).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        monthlyStats = monthlyUserInfo.stream().map(AdditionalInfo::getAlcoholAmount).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        yearlyStats = yearlyUserInfo.stream().map(AdditionalInfo::getAlcoholAmount).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        tempMap = new HashMap<>();
-        tempMap.put("weekly", weeklyStats.getAverage());
-        tempMap.put("monthly", monthlyStats.getAverage());
-        tempMap.put("yearly", yearlyStats.getAverage());
-        responseMap.put("alcohol", tempMap);
-
-        weeklyStats = weeklyUserInfo.stream().map(AdditionalInfo::getCigarettesAmount).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        monthlyStats = monthlyUserInfo.stream().map(AdditionalInfo::getCigarettesAmount).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        yearlyStats = yearlyUserInfo.stream().map(AdditionalInfo::getCigarettesAmount).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        tempMap = new HashMap<>();
-        tempMap.put("weekly", weeklyStats.getAverage());
-        tempMap.put("monthly", monthlyStats.getAverage());
-        tempMap.put("yearly", yearlyStats.getAverage());
-        responseMap.put("cigarettes", tempMap);
-
-        weeklyStats = weeklyUserInfo.stream().map(AdditionalInfo::getTrainingHours).map(num -> num == null ? 0 : num).mapToDouble(Double::doubleValue).summaryStatistics();
-        monthlyStats = monthlyUserInfo.stream().map(AdditionalInfo::getTrainingHours).map(num -> num == null ? 0 : num).mapToDouble(Double::doubleValue).summaryStatistics();
-        yearlyStats = yearlyUserInfo.stream().map(AdditionalInfo::getTrainingHours).map(num -> num == null ? 0 : num).mapToDouble(Double::doubleValue).summaryStatistics();
-        tempMap = new HashMap<>();
-        tempMap.put("weekly", weeklyStats.getAverage());
-        tempMap.put("monthly", monthlyStats.getAverage());
-        tempMap.put("yearly", yearlyStats.getAverage());
-        responseMap.put("training", tempMap);
-
-        weeklyStats = weeklyUserInfo.stream().map(AdditionalInfo::getGlassesOfWater).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        monthlyStats = monthlyUserInfo.stream().map(AdditionalInfo::getGlassesOfWater).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        yearlyStats = yearlyUserInfo.stream().map(AdditionalInfo::getGlassesOfWater).map(num -> num == null ? 0 : num).mapToDouble(Double::valueOf).summaryStatistics();
-        tempMap = new HashMap<>();
-        tempMap.put("weekly", weeklyStats.getAverage());
-        tempMap.put("monthly", monthlyStats.getAverage());
-        tempMap.put("yearly", yearlyStats.getAverage());
-        responseMap.put("water", tempMap);
-
         return ResponseEntity.ok(responseMap);
     }
 }

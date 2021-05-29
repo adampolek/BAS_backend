@@ -6,6 +6,7 @@ import com.example.bas.backend.model.Entry;
 import com.example.bas.backend.model.forms.ClassifierEntry;
 import com.example.bas.backend.service.AdditionalInfoService;
 import com.example.bas.backend.service.ClassifierService;
+import com.example.bas.backend.service.EmailService;
 import com.example.bas.backend.service.EntryService;
 import com.google.gson.Gson;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,11 +27,13 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
     private static final Logger logger = Logger.getLogger(EntryController.class.getName());
     private final ClassifierService classifierService;
     private final AdditionalInfoService additionalInfoService;
+    private final EmailService emailService;
 
-    public EntryController(EntryService service, ClassifierService classifierService, AdditionalInfoService additionalInfoService) {
+    public EntryController(EntryService service, ClassifierService classifierService, AdditionalInfoService additionalInfoService, EmailService emailService) {
         super(service);
         this.classifierService = classifierService;
         this.additionalInfoService = additionalInfoService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -122,4 +125,11 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
         return ResponseEntity.ok(classifierService.getCSV());
     }
 
+    @GetMapping(value = "/send_stats", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> sendStats(Authentication authentication) {
+        AppUser user = (AppUser) authentication.getPrincipal();
+        emailService.sendStats(user.getEmail(), user.getUsername());
+        return ResponseEntity.ok("Email sent");
+    }
 }
