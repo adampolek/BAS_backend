@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -83,6 +84,14 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
             return ResponseEntity.status(400).body("Item doesn't exist");
         }
         return ResponseEntity.ok(entry);
+    }
+
+    @GetMapping(value = "/isEntry", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Boolean> isEntryDateSet(
+            Authentication authentication,
+            @RequestParam @NotNull @DateTimeFormat(pattern = "yyyy-MM-dd") Date entryDate) {
+        return ResponseEntity.ok(service.isEntrySet(entryDate, ((AppUser) authentication.getPrincipal()).getId()));
     }
 
     @GetMapping(value = "/days", produces = "application/json")

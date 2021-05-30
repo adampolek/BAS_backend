@@ -11,6 +11,8 @@ public interface EntryService extends BasicService<Entry, Long> {
 
     Entry findByEntryDateAndUserId(Date entryDate, Long id);
 
+    boolean isEntrySet(Date entryDate, Long id);
+
     List<Entry> findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(Date start, Date stop, Long id);
 
     Map<String, Map<String, Double>> generateEntryStats(Long id);
