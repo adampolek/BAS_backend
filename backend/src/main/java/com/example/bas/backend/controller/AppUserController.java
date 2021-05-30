@@ -1,8 +1,6 @@
 package com.example.bas.backend.controller;
 
-import com.example.bas.backend.model.AdditionalInfo;
 import com.example.bas.backend.model.AppUser;
-import com.example.bas.backend.model.Entry;
 import com.example.bas.backend.model.PasswordResetToken;
 import com.example.bas.backend.model.forms.AppUserForm;
 import com.example.bas.backend.model.forms.DailyEntry;
@@ -115,24 +113,6 @@ public class AppUserController {
     public ResponseEntity<?> deleteAccount(@Valid @RequestBody final AppUserForm form) {
         AppUser user = appUserService.findById(form.getId());
         if (passwordEncoder.matches(form.getPassword(), user.getPassword())) {
-            List<Entry> userEntries = entryService.findAllByUserId(user.getId());
-            if (userEntries != null) {
-                for (Entry entry : userEntries) {
-                    entryService.deleteById(entry.getId());
-                }
-            }
-            List<AdditionalInfo> userInfos = additionalInfoService.findAllByUserId(user.getId());
-            if (userInfos != null) {
-                for (AdditionalInfo info : userInfos) {
-                    additionalInfoService.deleteById(info.getId());
-                }
-            }
-            List<PasswordResetToken> userResetTokens = passwordResetTokenService.findAllByUserId(user.getId());
-            if (userResetTokens != null) {
-                for (PasswordResetToken resetToken : userResetTokens) {
-                    passwordResetTokenService.deleteById(resetToken.getId());
-                }
-            }
             emailService.send(user.getEmail(), "Account removed", "Your account has been removed.\nThank you for using our app!");
             appUserService.deleteById(user.getId());
             return ResponseEntity.status(200).body("Successfully updated " + getClass().getName());

@@ -17,6 +17,17 @@ public class PasswordResetTokenServiceImpl extends BasicServiceImpl<PasswordRese
     }
 
     @Override
+    public PasswordResetToken findById(Long id) {
+        PasswordResetToken passwordResetToken = null;
+        try {
+            passwordResetToken = repo.findById(id).orElseThrow(() -> new UsernameNotFoundException("Token doesn't exist"));
+        } catch (final Exception e) {
+            logger.warning(e.getMessage());
+        }
+        return passwordResetToken;
+    }
+
+    @Override
     public PasswordResetToken findByToken(String token) {
         PasswordResetToken passwordResetToken = null;
         try {

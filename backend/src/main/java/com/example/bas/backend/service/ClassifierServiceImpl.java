@@ -41,11 +41,11 @@ public class ClassifierServiceImpl implements ClassifierService {
     }
 
     @Override
-    public List<String> predict(String input, String save) {
+    public List<String> predict(String input) {
         List<String> lines = new ArrayList<>();
         String line;
         try {
-            String command = String.format("%s --job test --classifier %s --input %s --save %s", COMMAND, classifier, input, save);
+            String command = String.format("%s --job test --classifier %s --input %s --save ", COMMAND, classifier, input);
             Process process = Runtime.getRuntime().exec(command);
             BufferedReader processReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             process.waitFor();

@@ -3,6 +3,7 @@ package com.example.bas.backend.service;
 import com.example.bas.backend.model.AdditionalInfo;
 import com.example.bas.backend.model.AppUser;
 import com.example.bas.backend.model.Entry;
+import com.example.bas.backend.model.PasswordResetToken;
 import com.example.bas.backend.model.forms.DailyEntry;
 import com.example.bas.backend.repo.AppUserRepo;
 import org.springframework.context.annotation.Lazy;
@@ -35,9 +36,24 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
 
     @Override
     public boolean deleteById(Long id) {
-        additionalInfoService.findAllByUserId(id);
-        entryService.findAllByUserId(id);
-        passwordResetTokenService.findAllByUserId(id);
+        List<AdditionalInfo> additionalInfos = additionalInfoService.findAllByUserId(id);
+        List<Entry> entries = entryService.findAllByUserId(id);
+        List<PasswordResetToken> passwordResetTokens = passwordResetTokenService.findAllByUserId(id);
+        if (additionalInfos != null) {
+            additionalInfos.forEach(additionalInfo -> {
+                additionalInfoService.deleteById(additionalInfo.getId());
+            });
+        }
+        if (entries != null) {
+            entries.forEach(entry -> {
+                entryService.deleteById(entry.getId());
+            });
+        }
+        if (passwordResetTokens != null) {
+            passwordResetTokens.forEach(passwordResetToken -> {
+                passwordResetTokenService.deleteById(passwordResetToken.getId());
+            });
+        }
         return super.deleteById(id);
     }
 
@@ -86,6 +102,9 @@ public class AppUserServiceImpl extends BasicServiceImpl<AppUser, AppUserRepo, L
         List<DailyEntry> dailyEntries = new ArrayList<>();
         List<AdditionalInfo> infoList = additionalInfoService.findAllByUserId(id);
         List<Entry> entryList = entryService.findAllByUserId(id);
+        if (entryList == null) {
+            return dailyEntries;
+        }
         for (Entry entry : entryList) {
             AdditionalInfo thisDayInfo = null;
             for (AdditionalInfo info : infoList) {

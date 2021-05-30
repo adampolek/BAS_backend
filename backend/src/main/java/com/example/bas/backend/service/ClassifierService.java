@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ClassifierService {
 
-    List<String> predict(String input, String save);
+    List<String> predict(String input);
 
     List<String> train();
 

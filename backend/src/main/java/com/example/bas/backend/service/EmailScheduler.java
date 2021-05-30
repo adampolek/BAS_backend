@@ -1,9 +1,6 @@
 package com.example.bas.backend.service;
 
-import com.example.bas.backend.model.AdditionalInfo;
 import com.example.bas.backend.model.AppUser;
-import com.example.bas.backend.model.Entry;
-import com.example.bas.backend.model.PasswordResetToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -35,24 +32,6 @@ public class EmailScheduler {
             Integer diff = Math.toIntExact(TimeUnit.DAYS.convert(diffInMs, TimeUnit.MILLISECONDS));
             if (diff.equals(daysToCheck.get(daysToCheck.size() - 1))) {
                 emailService.send(user.getEmail(), "Account removal", String.format("%s, your account has been removed due to inactivity and your data has been erased, thank you for using our app.", user.getUsername()));
-                List<Entry> userEntries = entryService.findAllByUserId(user.getId());
-                if (userEntries != null) {
-                    for (Entry entry : userEntries) {
-                        entryService.deleteById(entry.getId());
-                    }
-                }
-                List<AdditionalInfo> userInfos = additionalInfoService.findAllByUserId(user.getId());
-                if (userInfos != null) {
-                    for (AdditionalInfo info : userInfos) {
-                        additionalInfoService.deleteById(info.getId());
-                    }
-                }
-                List<PasswordResetToken> userResetTokens = passwordResetTokenService.findAllByUserId(user.getId());
-                if (userResetTokens != null) {
-                    for (PasswordResetToken resetToken : userResetTokens) {
-                        passwordResetTokenService.deleteById(resetToken.getId());
-                    }
-                }
                 appUserService.deleteById(user.getId());
             } else if (diff == daysToCheck.get(daysToCheck.size() - 1) - 1) {
                 emailService.send(user.getEmail(), "Account removal warning - 1 day", String.format("%s, you haven't been active for %d days, your account will be removed tomorrow at 8 PM.", user.getUsername(), diff));

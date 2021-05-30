@@ -5,8 +5,6 @@ import com.example.bas.backend.repo.EntryRepo;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,6 +24,17 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
         List<Entry> entry = null;
         try {
             entry = repo.findAllByUserId(id).orElseThrow(() -> new UsernameNotFoundException("Entry for that user id doesn't exist"));
+        } catch (final Exception e) {
+            logger.warning(e.getMessage());
+        }
+        return entry;
+    }
+
+    @Override
+    public Entry findById(Long id) {
+        Entry entry = null;
+        try {
+            entry = repo.findById(id).orElseThrow(() -> new UsernameNotFoundException("Entry with that id doesn't exist"));
         } catch (final Exception e) {
             logger.warning(e.getMessage());
         }
@@ -66,13 +75,7 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
         IntSummaryStatistics yearlyStatsInt;
 
         Map<String, Double> tempMap;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date today = new Date();
-        try {
-            today = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
-        } catch (ParseException e) {
-            logger.warning(e.getMessage());
-        }
 
         LocalDateTime weekAgoLocalDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).minusDays(6);
         LocalDateTime monthAgoLocalDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).minusDays(29);
@@ -85,6 +88,10 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
         List<Entry> weeklyUserInfo = this.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(weekAgoDate, today, id);
         List<Entry> monthlyUserInfo = this.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(monthAgoDate, today, id);
         List<Entry> yearlyUserInfo = this.findAllByEntryDateBetweenAndUserIdOrderByEntryDateDesc(yearAgoDate, today, id);
+
+        if (weeklyUserInfo == null || monthlyUserInfo == null || yearlyUserInfo == null) {
+            return null;
+        }
 
         weeklyStats = weeklyUserInfo.stream().map(Entry::getWeight).map(num -> num == null ? 0 : num).mapToDouble(Double::doubleValue).summaryStatistics();
         monthlyStats = monthlyUserInfo.stream().map(Entry::getWeight).map(num -> num == null ? 0 : num).mapToDouble(Double::doubleValue).summaryStatistics();
