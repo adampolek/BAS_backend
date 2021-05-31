@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 @Service
 public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> implements EntryService {
     private static final Logger logger = Logger.getLogger(EntryServiceImpl.class.getName());
+
     public EntryServiceImpl(EntryRepo entryRepo) {
         super(entryRepo);
     }
@@ -144,6 +145,12 @@ public class EntryServiceImpl extends BasicServiceImpl<Entry, EntryRepo, Long> i
         tempMap.put("monthly", (double) (Math.round(monthlyStatsInt.getAverage() * 100.0)));
         tempMap.put("yearly", (double) (Math.round(yearlyStatsInt.getAverage() * 100.0)));
         responseMap.put("healthy", tempMap);
+
+        tempMap = new HashMap<>();
+        tempMap.put("weekly", (double) weeklyUserInfo.size());
+        tempMap.put("monthly", (double) monthlyUserInfo.size());
+        tempMap.put("yearly", (double) yearlyUserInfo.size());
+        responseMap.put("sizes", tempMap);
         return responseMap;
     }
 }

@@ -27,7 +27,7 @@ public class ClassifierServiceImpl implements ClassifierService {
 
     //TODO Sciezka na serwerze
 //    private static final String PATH = "BAS_classifier/";
-//    private static final String COMMAND = "python3 "+ PATH + "main.py;
+//    private static final String COMMAND = "python3 "+ PATH + "main.py";
     public ClassifierServiceImpl() {
         File f = new File("backend/src/main/resources/classifier.properties");
         try {

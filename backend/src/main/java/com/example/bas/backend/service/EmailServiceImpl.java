@@ -69,10 +69,10 @@ public class EmailServiceImpl implements EmailService {
             PdfPTable userTable = new PdfPTable(2);
             createUserTable(userTable, user, simpleDateFormat);
 
-            PdfPTable entryTable = new PdfPTable(6);
+            PdfPTable entryTable = new PdfPTable(7);
             createEntryTable(entryTable, todayEntry, entryStats, simpleDateFormat);
 
-            PdfPTable infoTable = new PdfPTable(6);
+            PdfPTable infoTable = new PdfPTable(7);
             createInfoTable(infoTable, todayInfo, infoStats, simpleDateFormat);
 
             Chunk chunk;
@@ -125,8 +125,8 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private void createEntryTable(PdfPTable entryTable, Entry todayEntry, Map<String, Map<String, Double>> entryStats, SimpleDateFormat simpleDateFormat) {
-        List<String> keys = Arrays.asList("weight", "glucose", "insulin", "bloodPressure", "healthy");
-        Stream.of("", "Weight (kg)", "Glucose (mg/dL)", "Insulin (mU/ml)", "Blood Pressure (mm/Hg)", "Healthy").forEach(columnTitle -> {
+        List<String> keys = Arrays.asList("weight", "glucose", "insulin", "bloodPressure", "healthy", "sizes");
+        Stream.of("", "Weight (kg)", "Glucose (mg/dL)", "Insulin (mU/ml)", "Blood Pressure (mm/Hg)", "Healthy", "Amount of Entries").forEach(columnTitle -> {
             PdfPCell header = new PdfPCell();
             header.setBackgroundColor(BaseColor.LIGHT_GRAY);
             header.setBorderWidth(2);
@@ -138,26 +138,39 @@ public class EmailServiceImpl implements EmailService {
         entryTable.addCell(todayEntry.getGlucose().toString());
         entryTable.addCell(todayEntry.getInsulin().toString());
         entryTable.addCell(todayEntry.getBloodPressure().toString());
-        entryTable.addCell(todayEntry.getHealthy().toString());
+        entryTable.addCell(String.valueOf(todayEntry.getHealthy() ? 100.0 : 0.0));
+        entryTable.addCell("");
 
         entryTable.addCell("Weekly");
         for (String key : keys) {
-            entryTable.addCell(String.valueOf(entryStats.get(key).get("weekly")));
+            if (key.equals("sizes")) {
+                entryTable.addCell(entryStats.get(key).get("weekly") + " / 7.0");
+            } else {
+                entryTable.addCell(String.valueOf(entryStats.get(key).get("weekly")));
+            }
         }
         entryTable.addCell("Monthly");
         for (String key : keys) {
-            entryTable.addCell(String.valueOf(entryStats.get(key).get("monthly")));
+            if (key.equals("sizes")) {
+                entryTable.addCell(entryStats.get(key).get("monthly") + " / 30.0");
+            } else {
+                entryTable.addCell(String.valueOf(entryStats.get(key).get("monthly")));
+            }
         }
 
         entryTable.addCell("Yearly");
         for (String key : keys) {
-            entryTable.addCell(String.valueOf(entryStats.get(key).get("yearly")));
+            if (key.equals("sizes")) {
+                entryTable.addCell(entryStats.get(key).get("yearly") + " / 365.0");
+            } else {
+                entryTable.addCell(String.valueOf(entryStats.get(key).get("yearly")));
+            }
         }
     }
 
     private void createInfoTable(PdfPTable infoTable, AdditionalInfo todayInfo, Map<String, Map<String, Double>> infoStats, SimpleDateFormat simpleDateFormat) {
-        List<String> keys = Arrays.asList("sleep", "alcohol", "cigarettes", "training", "water");
-        Stream.of("", "Hours of sleep", "Alcohol (unit)", "Cigarettes (unit)", "Hours of training", "Water (unit)").forEach(columnTitle -> {
+        List<String> keys = Arrays.asList("sleep", "alcohol", "cigarettes", "training", "water", "sizes");
+        Stream.of("", "Hours of sleep", "Alcohol (unit)", "Cigarettes (unit)", "Hours of training", "Water (unit)", "Amount of Entries").forEach(columnTitle -> {
             PdfPCell header = new PdfPCell();
             header.setBackgroundColor(BaseColor.LIGHT_GRAY);
             header.setBorderWidth(2);
@@ -170,19 +183,32 @@ public class EmailServiceImpl implements EmailService {
         infoTable.addCell(todayInfo.getCigarettesAmount().toString());
         infoTable.addCell(todayInfo.getTrainingHours().toString());
         infoTable.addCell(todayInfo.getGlassesOfWater().toString());
+        infoTable.addCell("");
 
         infoTable.addCell("Weekly");
         for (String key : keys) {
-            infoTable.addCell(String.valueOf(infoStats.get(key).get("weekly")));
+            if (key.equals("sizes")) {
+                infoTable.addCell(infoStats.get(key).get("weekly") + " / 7.0");
+            } else {
+                infoTable.addCell(String.valueOf(infoStats.get(key).get("weekly")));
+            }
         }
         infoTable.addCell("Monthly");
         for (String key : keys) {
-            infoTable.addCell(String.valueOf(infoStats.get(key).get("monthly")));
+            if (key.equals("sizes")) {
+                infoTable.addCell(infoStats.get(key).get("monthly") + " / 30.0");
+            } else {
+                infoTable.addCell(String.valueOf(infoStats.get(key).get("monthly")));
+            }
         }
 
         infoTable.addCell("Yearly");
         for (String key : keys) {
-            infoTable.addCell(String.valueOf(infoStats.get(key).get("yearly")));
+            if (key.equals("sizes")) {
+                infoTable.addCell(infoStats.get(key).get("yearly") + " / 365.0");
+            } else {
+                infoTable.addCell(String.valueOf(infoStats.get(key).get("yearly")));
+            }
         }
     }
 
