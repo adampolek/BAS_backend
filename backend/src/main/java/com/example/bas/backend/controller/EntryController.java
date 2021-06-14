@@ -53,7 +53,8 @@ public class EntryController extends BasicController<EntryService, Entry, Long> 
                 .BMI(Collections.singletonList(form.getWeight() / (Math.pow((double) user.getHeight() / 100, 2))))
                 .Age(Collections.singletonList((int) ((new Date().getTime() - user.getBirthDate().getTime()) / (1000L * 60 * 60 * 24 * 365)))).build();
         List<String> predict = classifierService.predict(new Gson().toJson(classifierEntry)
-                .replace("\"", "\\\""));                                    //zakomentować linię przed wrzuceniem na serwer
+//                .replace("\"", "\\\"")//zakomentować linię przed wrzuceniem na serwer
+        );
         if (predict.isEmpty()) {
             logger.warning("There was an error with your classifier.");
         } else {

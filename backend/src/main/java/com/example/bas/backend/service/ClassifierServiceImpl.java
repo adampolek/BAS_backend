@@ -19,15 +19,16 @@ import java.util.logging.Logger;
 public class ClassifierServiceImpl implements ClassifierService {
 
 
-    private String classifier;
+    private String classifier = "tree";
     private static final Logger logger = Logger.getLogger(ClassifierServiceImpl.class.getName());
     //TODO Sciezka lokalna
-    private static final String PATH = "..\\BAS_classifier\\";
-    private static final String COMMAND = "python " + PATH + "main.py";
+//    private static final String PATH = "..\\BAS_classifier\\";
+//    private static final String COMMAND = "python " + PATH + "main.py";
 
     //TODO Sciezka na serwerze
-//    private static final String PATH = "BAS_classifier/";
-//    private static final String COMMAND = "python3 "+ PATH + "main.py";
+    private static final String PATH = "BAS_classifier/";
+    private static final String COMMAND = "python3 " + PATH + "main.py";
+
     public ClassifierServiceImpl() {
         File f = new File("backend/src/main/resources/classifier.properties");
         try {
@@ -48,10 +49,14 @@ public class ClassifierServiceImpl implements ClassifierService {
             String command = String.format("%s --job test --classifier %s --input %s --save ", COMMAND, classifier, input);
             Process process = Runtime.getRuntime().exec(command);
             BufferedReader processReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             process.waitFor();
             while (processReader.ready()) {
                 line = processReader.readLine();
                 lines.add(line);
+            }
+            while (errorReader.ready()) {
+                logger.warning(errorReader.readLine());
             }
         } catch (IOException | InterruptedException e) {
             logger.warning(e.getMessage());

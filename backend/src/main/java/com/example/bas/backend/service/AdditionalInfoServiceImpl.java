@@ -5,6 +5,8 @@ import com.example.bas.backend.repo.AdditionalInfoRepo;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -81,7 +83,13 @@ public class AdditionalInfoServiceImpl extends BasicServiceImpl<AdditionalInfo, 
         DoubleSummaryStatistics monthlyStats;
         DoubleSummaryStatistics yearlyStats;
         Map<String, Double> tempMap;
-        Date today = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date today = null;
+        try {
+            today = format.parse(format.format(new Date()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         AdditionalInfo userInfo = this.findByUserIdAndEntryDate(id, today);
         if (userInfo == null) {
             return null;

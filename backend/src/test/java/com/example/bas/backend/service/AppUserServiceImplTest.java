@@ -150,7 +150,7 @@ public class AppUserServiceImplTest extends TestCase {
 
     @Test
     public void testFindUserByEmail() {
-        assertNotNull(appUserService.findUserByEmail("ktos353@wp.pl"));
+        assertNotNull(appUserService.findUserByEmail("mazsak97@gmail.com"));
         assertNull(appUserService.findUserByEmail("kogosniema@wp.pl"));
     }
 
